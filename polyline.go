@@ -4,7 +4,8 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
-	"fmt"
+	"image/png"
+	"os"
 )
 
 type PolyLine struct {
@@ -59,16 +60,20 @@ func (img *PolyLine)AddaroundPoint(point image.Point,pointcolor color.Color,widt
 	//fmt.Println("AddaroundPoint",point.X,point.Y)
 	halfwidth := width/2
 	r,g,b,a := pointcolor.RGBA()
-	fmt.Println(pointcolor)
+	//fmt.Println(pointcolor)
 	border := 1
 	for x:= point.X-int(halfwidth)-border;x <= point.X+int(halfwidth)+border;x++{
 		for y:= point.Y-int(halfwidth)-border;y <= point.Y+int(halfwidth)+border;y++{
 			var ptcolor color.RGBA
-			if ((x-point.X)*(x-point.X)+(y-point.Y)*(y-point.Y))>int((halfwidth)*(halfwidth)){
+			if ((x-point.X)*(x-point.X)+(y-point.Y)*(y-point.Y))>int((halfwidth+1)*(halfwidth+1)){
 				continue
-			}else if ((x-point.X)*(x-point.X)+(y-point.Y)*(y-point.Y))>(int(halfwidth)*int(halfwidth)){
+			}else if ((x-point.X)*(x-point.X)+(y-point.Y)*(y-point.Y))>int(halfwidth+1)*int(halfwidth+1){
+				ptcolor = color.RGBA{uint8(r>>8/4),uint8(g>>8/4),uint8(b>>8/4),uint8(a>>8/4)}
+			}else if ((x-point.X)*(x-point.X)+(y-point.Y)*(y-point.Y))>int((halfwidth)*(halfwidth)){
 				ptcolor = color.RGBA{uint8(r>>8/2),uint8(g>>8/2),uint8(b>>8/2),uint8(a>>8/2)}
-				fmt.Println(ptcolor)
+			}else if ((x-point.X)*(x-point.X)+(y-point.Y)*(y-point.Y))>(int(halfwidth)*int(halfwidth)){
+				ptcolor = color.RGBA{uint8(r>>8/4*3),uint8(g>>8/4*3),uint8(b>>8/4*3),uint8(a>>8/4*3)}
+				//fmt.Println(ptcolor)
 			}else{
 				ptcolor = color.RGBA{uint8(r),uint8(g),uint8(b),uint8(a)}
 			}
@@ -88,6 +93,20 @@ func (img *PolyLine)AddPoint(point image.Point,pointcolor color.Color){
 		}
 	}
 	img.Map[point]=pointcolor
+}
+
+func (img *PolyLine)SaveToPngFile(imagename string){
+	fi,err := os.Create("./test.png")
+	if err != nil{
+		panic(err)
+	}
+	defer func(){
+		fi.Close()
+	}()
+	err = png.Encode(fi, img.Image)
+	if err != nil{
+		panic(err)
+	}
 }
 
 func abs(x int) int {
