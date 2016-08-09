@@ -16,7 +16,7 @@ func TestAddPolyLine(t *testing.T) {
 	//AddLine(rgbaimage,image.Pt(5, 5), image.Pt(5, 95), colornames.Orange, 1)
 	//AddLine(rgbaimage,image.Pt(5, 5), image.Pt(95, 5), colornames.Orange, 1)
 	polyline := NewPolyLine(rgbaimage)
-	polyline.AddPolyLine([]image.Point{image.Pt(5, 5), image.Pt(95, 5),image.Pt(5, 95),image.Pt(5, 5), image.Pt(95, 95)}, colornames.Orange, 1)
+	polyline.AddPolyLine([]image.Point{image.Pt(5, 5), image.Pt(95, 5),image.Pt(5, 95),image.Pt(5, 5), image.Pt(95, 95)}, colornames.White, 5)
 	polyline.Draw()
 	fi,err := os.Create("./test.png")
 	if err != nil{

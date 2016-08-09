@@ -41,10 +41,10 @@ func (img *PolyLine)AddLine(start, end image.Point, linecolor color.Color, width
 	fmt.Println("AddLine",start.X,start.Y,end.X,end.Y)
 	point := start
 	for {
-		img.AddaroundPoint(point,linecolor,width)
 		if !isIn(point.X ,start.X ,end.X) || !isIn(point.Y,start.Y, end.Y){
 			break
 		}
+		img.AddaroundPoint(point,linecolor,width)
 		if abs(start.X-end.X) >= abs(start.Y-end.Y){
 			point.X += sign(end.X-start.X)
 			point.Y =start.Y+int(float64(end.Y-start.Y)/float64(end.X-start.X)*float64(point.X-start.X))
