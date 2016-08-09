@@ -32,8 +32,15 @@ func (img *PolyLine)AddPolyLine(points []image.Point, linecolor color.Color, wid
 }
 
 func (img *PolyLine)Draw(){
-	for point,color := range img.Map{
-		img.Image.Set(point.X,point.Y,color)
+	for point, pointcolor := range img.Map{
+		orgcolor := img.Image.At(point.X,point.Y)
+		or,og,ob,_:= orgcolor.RGBA()
+		r,g,b,a := pointcolor.RGBA()
+		nr := (r*(255-a)+or*a)>>24
+		ng := (g*(255-a)+og*a)>>24
+		nb := (b*(255-a)+ob*a)>>24
+		nowcolor := color.RGBA{uint8(nr),uint8(ng),uint8(nb),uint8(255)}
+		img.Image.Set(point.X,point.Y, nowcolor)
 	}
 }
 
