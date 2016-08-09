@@ -4,6 +4,7 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
+	"fmt"
 )
 
 type PolyLine struct {
@@ -57,15 +58,20 @@ func (img *PolyLine)AddLine(start, end image.Point, linecolor color.Color, width
 func (img *PolyLine)AddaroundPoint(point image.Point,pointcolor color.Color,width float64){
 	//fmt.Println("AddaroundPoint",point.X,point.Y)
 	halfwidth := width/2
-	r,g,b,_ := pointcolor.RGBA()
+	r,g,b,a := pointcolor.RGBA()
+	fmt.Println(pointcolor)
 	border := 1
 	for x:= point.X-int(halfwidth)-border;x <= point.X+int(halfwidth)+border;x++{
 		for y:= point.Y-int(halfwidth)-border;y <= point.Y+int(halfwidth)+border;y++{
-			var a uint8= 255
+			var ptcolor color.RGBA
 			if ((x-point.X)*(x-point.X)+(y-point.Y)*(y-point.Y))>int((halfwidth)*(halfwidth)){
 				continue
+			}else if ((x-point.X)*(x-point.X)+(y-point.Y)*(y-point.Y))>(int(halfwidth)*int(halfwidth)){
+				ptcolor = color.RGBA{uint8(r>>8/2),uint8(g>>8/2),uint8(b>>8/2),uint8(a>>8/2)}
+				fmt.Println(ptcolor)
+			}else{
+				ptcolor = color.RGBA{uint8(r),uint8(g),uint8(b),uint8(a)}
 			}
-			var ptcolor = color.RGBA{uint8(r),uint8(g),uint8(b),a}
 			//fmt.Println("AddPoint",x,y,ptcolor)
 			img.AddPoint(image.Pt(x,y),ptcolor)
 		}
