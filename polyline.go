@@ -6,6 +6,7 @@ import (
 	"image/draw"
 	"image/png"
 	"os"
+	"fmt"
 )
 
 type PolyLine struct {
@@ -21,6 +22,7 @@ func NewPolyLine(img draw.Image)*PolyLine{
 }
 
 func (img *PolyLine)AddPolyLine(points []image.Point, linecolor color.Color, width float64) {
+	fmt.Println(points)
 	if len(points) < 2{
 		return
 	}
@@ -96,7 +98,7 @@ func (img *PolyLine)AddPoint(point image.Point,pointcolor color.Color){
 }
 
 func (img *PolyLine)SaveToPngFile(imagename string){
-	fi,err := os.Create("./test.png")
+	fi,err := os.Create(imagename)
 	if err != nil{
 		panic(err)
 	}
