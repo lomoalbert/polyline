@@ -62,10 +62,8 @@ func (img *PolyLine)AddaroundPoint(point image.Point,pointcolor color.Color,widt
 	for x:= point.X-int(halfwidth)-border;x <= point.X+int(halfwidth)+border;x++{
 		for y:= point.Y-int(halfwidth)-border;y <= point.Y+int(halfwidth)+border;y++{
 			var a uint8= 255
-			if ((x-point.X)*(x-point.X)+(y-point.Y)*(y-point.Y))>int((halfwidth+1)*(halfwidth+1)){
+			if ((x-point.X)*(x-point.X)+(y-point.Y)*(y-point.Y))>int((halfwidth)*(halfwidth)){
 				continue
-			}else if ((x-point.X)*(x-point.X)+(y-point.Y)*(y-point.Y))>(int(halfwidth*halfwidth)){
-				a = a/2
 			}
 			var ptcolor = color.RGBA{uint8(r),uint8(g),uint8(b),a}
 			//fmt.Println("AddPoint",x,y,ptcolor)
