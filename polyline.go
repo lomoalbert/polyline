@@ -6,22 +6,21 @@ import (
 	"image/draw"
 	"image/png"
 	"os"
-	"fmt"
 )
 
 type PolyLine struct {
 	Image draw.Image
-	Map map[image.Point]color.Color
+	Map map[image.Point]color.RGBA
 }
 
 func NewPolyLine(img draw.Image)*PolyLine{
 	polyline := new(PolyLine)
 	polyline.Image = img
-	polyline.Map = make(map[image.Point]color.Color)
+	polyline.Map = make(map[image.Point]color.RGBA)
 	return polyline
 }
 
-func (img *PolyLine)AddPolyLine(points []image.Point, linecolor color.Color, width float64) {
+func (img *PolyLine)AddPolyLine(points []image.Point, linecolor color.RGBA, width float64) {
 	if len(points) < 2{
 		return
 	}
@@ -34,25 +33,20 @@ func (img *PolyLine)AddPolyLine(points []image.Point, linecolor color.Color, wid
 
 func (img *PolyLine)Draw(){
 	for point, pointcolor := range img.Map{
-		_,_,_,a := pointcolor.RGBA()
-		fmt.Println("rgba:A=",a)
-		if a == 65535{
-			img.Image.Set(point.X,point.Y, pointcolor)
-			continue
-		}
-		orgcolor := img.Image.At(point.X,point.Y)
-		or,og,ob,_:= orgcolor.RGBA()
-		r,g,b,a := pointcolor.RGBA()
-		nr := (r>>8*(65535-a)>>8+or>>8*a>>8)
-		ng := (g>>8*(65535-a)>>8+og>>8*a>>8)
-		nb := (b>>8*(65535-a)>>8+ob>>8*a>>8)
+		a := pointcolor.A
+		var fa float64= float64(a)/255
+		var ba float64= float64(255-a)/255
+		or,og,ob,_ := img.Image.At(point.X,point.Y).RGBA()
+		nr := float64(pointcolor.R)*fa+float64(or&0xff)*ba
+		ng := float64(pointcolor.G)*fa+float64(og&0xff)*ba
+		nb := float64(pointcolor.B)*fa+float64(ob&0xff)*ba
 		nowcolor := color.RGBA{uint8(nr),uint8(ng),uint8(nb),uint8(255)}
 		img.Image.Set(point.X,point.Y, nowcolor)
 	}
 }
 
 //AddPolyLine draws a line between (start.X, start.Y) and (end.X, end.Y)
-func (img *PolyLine)AddLine(start, end image.Point, linecolor color.Color, width float64) {
+func (img *PolyLine)AddLine(start, end image.Point, linecolor color.RGBA, width float64) {
 	//fmt.Println("AddLine",start.X,start.Y,end.X,end.Y)
 	point := start
 	for {
@@ -70,7 +64,7 @@ func (img *PolyLine)AddLine(start, end image.Point, linecolor color.Color, width
 	}
 }
 
-func (img *PolyLine)AddaroundPoint(point image.Point,pointcolor color.Color,width float64){
+func (img *PolyLine)AddaroundPoint(point image.Point,pointcolor color.RGBA,width float64){
 	//fmt.Println("AddaroundPoint",point.X,point.Y)
 	halfwidth := width/2
 	r,g,b,a := pointcolor.RGBA()
@@ -97,7 +91,7 @@ func (img *PolyLine)AddaroundPoint(point image.Point,pointcolor color.Color,widt
 	}
 }
 
-func (img *PolyLine)AddPoint(point image.Point,pointcolor color.Color){
+func (img *PolyLine)AddPoint(point image.Point,pointcolor color.RGBA){
 	pt,ok := img.Map[point]
 	if ok{
 		_,_,_,pta := pt.RGBA()
