@@ -6,6 +6,7 @@ import (
 	"image/draw"
 	"image/png"
 	"os"
+	"fmt"
 )
 
 type PolyLine struct {
@@ -33,12 +34,18 @@ func (img *PolyLine)AddPolyLine(points []image.Point, linecolor color.Color, wid
 
 func (img *PolyLine)Draw(){
 	for point, pointcolor := range img.Map{
+		_,_,_,a := pointcolor.RGBA()
+		fmt.Println("rgba:A=",a)
+		if a == 65535{
+			img.Image.Set(point.X,point.Y, pointcolor)
+			continue
+		}
 		orgcolor := img.Image.At(point.X,point.Y)
 		or,og,ob,_:= orgcolor.RGBA()
 		r,g,b,a := pointcolor.RGBA()
-		nr := (r*(255-a)+or*a)>>24
-		ng := (g*(255-a)+og*a)>>24
-		nb := (b*(255-a)+ob*a)>>24
+		nr := (r>>8*(65535-a)>>8+or>>8*a>>8)
+		ng := (g>>8*(65535-a)>>8+og>>8*a>>8)
+		nb := (b>>8*(65535-a)>>8+ob>>8*a>>8)
 		nowcolor := color.RGBA{uint8(nr),uint8(ng),uint8(nb),uint8(255)}
 		img.Image.Set(point.X,point.Y, nowcolor)
 	}
