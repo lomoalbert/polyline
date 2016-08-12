@@ -11,7 +11,7 @@ import (
 
 type PolyLine struct {
 	Image draw.Image
-	Map map[image.Point]color.Color
+	LineImage draw.Image
 }
 
 type PointFoalt64 struct {
@@ -20,11 +20,12 @@ type PointFoalt64 struct {
 }
 
 func NewPolyLine(img image.Image)*PolyLine{
+	oldimage := image.NewRGBA(img.Bounds())
+	draw.Draw(oldimage,img.Bounds(),img,image.ZP,draw.Src)
 	newimage := image.NewRGBA(img.Bounds())
-	draw.Draw(newimage,img.Bounds(),img,image.ZP,draw.Src)
 	polyline := new(PolyLine)
-	polyline.Image = newimage
-	polyline.Map = make(map[image.Point]color.Color)
+	polyline.Image = oldimage
+	polyline.LineImage = newimage
 	return polyline
 }
 
@@ -40,22 +41,7 @@ func (img *PolyLine)AddPolyLine(points []image.Point, linecolor color.Color, wid
 }
 
 func (img *PolyLine)Draw(){
-
-	var LineImage = image.NewRGBA(img.Image.Bounds())
-	for point, pointcolor := range img.Map{
-		orgcolor := img.Image.At(point.X,point.Y)
-		or,og,ob,oa:= orgcolor.RGBA()
-		r,g,b,a := pointcolor.RGBA()
-		nr := (r*a>>8+or*(255-a>>8))>>16
-		ng := (g*a>>8+og*(255-a>>8))>>16
-		nb := (b*a>>8+ob*(255-a>>8))>>16
-		//fmt.Println("-",r,g,b,a)
-		//fmt.Println("+",or,og,ob,oa)
-		//fmt.Println("=",uint8(nr),uint8(ng),uint8(nb),MinUint32(255,a+oa),uint8(MinUint32(255,a+oa)))
-		nowcolor := color.RGBA{uint8(nr),uint8(ng),uint8(nb),uint8(MinUint32(255,a+oa))}
-		LineImage.Set(point.X,point.Y, nowcolor)
-	}
-	draw.Draw(img.Image,img.Image.Bounds(),LineImage,image.ZP,draw.Over)
+	draw.Draw(img.Image,img.Image.Bounds(),img.LineImage,image.ZP,draw.Over)
 }
 
 func MinUint32(a,b uint32)uint32{
@@ -107,15 +93,13 @@ func (img *PolyLine)AddaroundPoint(point PointFoalt64,pointcolor color.Color,wid
 
 
 func (img *PolyLine)AddPoint(point image.Point,pointcolor color.Color){
-	pt,ok := img.Map[point]
-	if ok{
-		_,_,_,pta := pt.RGBA()
-		_,_,_,pointa := pointcolor.RGBA()
-		if pointa<pta{
-			return
-		}
+	col :=img.LineImage.At(point.X,point.Y)
+	_,_,_,pta := col.RGBA()
+	_,_,_,pointa := pointcolor.RGBA()
+	if pointa<pta{
+		return
 	}
-	img.Map[point]=pointcolor
+	img.LineImage.Set(point.X,point.Y,pointcolor)
 }
 
 func (img *PolyLine)SaveToPngFile(imagename string){
