@@ -6,6 +6,7 @@ import (
 	"image/draw"
 	"image/png"
 	"os"
+	"math"
 )
 
 type PolyLine struct {
@@ -89,19 +90,21 @@ func (img *PolyLine)AddaroundPoint(point PointFoalt64,pointcolor color.Color,wid
 	r,g,b,a := pointcolor.RGBA()
 	//fmt.Println(pointcolor)
 	border := 1.0
-	for x:= point.X-halfwidth-border;x <= point.X+halfwidth+border;x=x+0.1{
-		for y:= point.Y-halfwidth-border;y <= point.Y+halfwidth+border;y=y+0.1{
+	for x:= point.X-halfwidth-border;x <= point.X+halfwidth+border;x=x+0.3{
+		for y:= point.Y-halfwidth-border;y <= point.Y+halfwidth+border;y=y+0.3{
 			if ((x-point.X)*(x-point.X)+(y-point.Y)*(y-point.Y))>(halfwidth+border)*(halfwidth+border){
 				continue
 			}
 			distance := (x-point.X)*(x-point.X)+(y-point.Y)*(y-point.Y)
 			maxdistance := (halfwidth+border)*(halfwidth+border)
 			mindistance := halfwidth*halfwidth
+			distance = math.Max(distance,mindistance)
 			pointa := uint8(float64(a>>8)*(maxdistance-distance)/(maxdistance-mindistance))
 			img.AddPoint(image.Point{int(x),int(y)},color.RGBA{uint8(r),uint8(g),uint8(b),uint8(pointa)})
 		}
 	}
 }
+
 
 func (img *PolyLine)AddPoint(point image.Point,pointcolor color.Color){
 	pt,ok := img.Map[point]
