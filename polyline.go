@@ -77,7 +77,7 @@ func (img *PolyLine)AddLine(start, end image.Point, linecolor color.Color, width
 		if !isIn(point.X ,start.X ,end.X) || !isIn(point.Y,start.Y, end.Y){
 			break
 		}
-		go img.AddaroundPoint(PointFoalt64{point.X,point.Y},linecolor,width)
+		img.AddaroundPoint(PointFoalt64{point.X,point.Y},linecolor,width)
 		if abs(start.X-end.X) >= abs(start.Y-end.Y){
 			point.X += float64(sign(end.X-start.X))
 			point.Y =float64(start.Y)+float64(end.Y-start.Y)/float64(end.X-start.X)*(point.X-float64(start.X))
@@ -102,6 +102,7 @@ func (img *PolyLine)AddaroundPoint(point PointFoalt64,pointcolor color.Color,wid
 			mindistance := halfwidth*halfwidth
 			distance = math.Max(distance,mindistance)
 			pointa := uint8(float64(a>>8)*(maxdistance-distance)/(maxdistance-mindistance))
+			img.WG.Add(1)
 			img.AddPoint(image.Point{int(x),int(y)},color.RGBA{uint8(r),uint8(g),uint8(b),uint8(pointa)})
 		}
 	}
@@ -109,6 +110,7 @@ func (img *PolyLine)AddaroundPoint(point PointFoalt64,pointcolor color.Color,wid
 
 
 func (img *PolyLine)AddPoint(point image.Point,pointcolor color.Color){
+	defer img.WG.Done()
 	img.RWMutex.RLock()
 	pt,ok := img.Map[point]
 	if ok{
