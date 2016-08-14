@@ -71,12 +71,12 @@ func MinUint32(a,b uint32)uint32{
 //AddPolyLine draws a line between (start.X, start.Y) and (end.X, end.Y)
 func (img *PolyLine)AddLine(start, end image.Point, linecolor color.Color, width float64) {
 	//fmt.Println("AddLine",start.X,start.Y,end.X,end.Y)
+	defer	img.WG.Done()
 	point := PointFoalt64{float64(start.X),float64(start.Y)}
 	for {
 		if !isIn(point.X ,start.X ,end.X) || !isIn(point.Y,start.Y, end.Y){
 			break
 		}
-		img.WG.Add(1)
 		go img.AddaroundPoint(PointFoalt64{point.X,point.Y},linecolor,width)
 		if abs(start.X-end.X) >= abs(start.Y-end.Y){
 			point.X += float64(sign(end.X-start.X))
@@ -86,14 +86,11 @@ func (img *PolyLine)AddLine(start, end image.Point, linecolor color.Color, width
 			point.X =float64(start.X)+float64(end.X-start.X)/float64(end.Y-start.Y)*(point.Y-float64(start.Y))
 		}
 	}
-	img.WG.Done()
 }
 
 func (img *PolyLine)AddaroundPoint(point PointFoalt64,pointcolor color.Color,width float64){
-	//fmt.Println("AddaroundPoint",point.X,point.Y)
 	halfwidth := width/2
 	r,g,b,a := pointcolor.RGBA()
-	//fmt.Println(pointcolor)
 	border := 1.0
 	for x:= point.X-halfwidth-border;x <= point.X+halfwidth+border;x=x+0.3{
 		for y:= point.Y-halfwidth-border;y <= point.Y+halfwidth+border;y=y+0.3{
@@ -105,22 +102,19 @@ func (img *PolyLine)AddaroundPoint(point PointFoalt64,pointcolor color.Color,wid
 			mindistance := halfwidth*halfwidth
 			distance = math.Max(distance,mindistance)
 			pointa := uint8(float64(a>>8)*(maxdistance-distance)/(maxdistance-mindistance))
-			img.WG.Add(1)
-			go img.AddPoint(image.Point{int(x),int(y)},color.RGBA{uint8(r),uint8(g),uint8(b),uint8(pointa)})
+			img.AddPoint(image.Point{int(x),int(y)},color.RGBA{uint8(r),uint8(g),uint8(b),uint8(pointa)})
 		}
 	}
-	img.WG.Done()
 }
 
 
 func (img *PolyLine)AddPoint(point image.Point,pointcolor color.Color){
-	defer img.WG.Done()
 	img.RWMutex.RLock()
 	pt,ok := img.Map[point]
 	if ok{
 		_,_,_,pta := pt.RGBA()
 		_,_,_,pointa := pointcolor.RGBA()
-		if pointa<pta{
+		if pointa<=pta{
 			img.RWMutex.RUnlock()
 			return
 		}
@@ -131,7 +125,7 @@ func (img *PolyLine)AddPoint(point image.Point,pointcolor color.Color){
 	if ok{
 		_,_,_,pta := pt.RGBA()
 		_,_,_,pointa := pointcolor.RGBA()
-		if pointa<pta{
+		if pointa<=pta{
 			img.RWMutex.Unlock()
 			return
 		}
